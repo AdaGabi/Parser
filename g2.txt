@@ -1,0 +1,30 @@
+program decllist declaration declarationAssign type1 arraydecl mapdecl type cmpdstmt stmtlist stmt simplstmt assignstmt expression term factor iostmt structstmt ifstmt whilestmt forstmt condition relation forstart declOrDeclAssign sign operator
+identifier = bool char int string const . , map start stop + - * / % giveInput getOutput ( ) if else while for < <= == != >= > [ ] { }
+program
+program -> decllist . cmpdstmt .
+declOrDeclAssign -> declaration | declarationAssign
+decllist -> declOrDeclAssign | declOrDeclAssign . decllist
+declaration -> type identifier
+declarationAssign -> type identifier = expression
+type1 -> bool | char | int | string
+arraydecl -> type1 [ const ]
+mapdecl -> map { type1 , type2 } 
+type -> type1 | arraydecl | mapdecl
+cmpdstmt -> start stmtlist stop
+stmtlist -> stmt | stmt . stmtlist
+stmt -> simplstmt | structstmt
+simplstmt -> assignstmt | iostmt
+assignstmt -> identifier = expression
+sign -> + | -
+expression -> expression sign term | term
+operator -> * | / | %
+term -> term operator factor | factor
+factor -> ( expression ) | identifier
+iostmt -> giveInput | getOutput (  expression )
+structstmt -> cmpdstmt | ifstmt | whilestmt
+ifstmt -> if ( condition ) start stmt else stmt stop | if ( condition ) start stmt stop
+whilestmt -> while ( condition ) start stmt stop
+forstart -> declarationAssign | assignstmt
+forstmt -> for ( forstart . condition . assignstmt ) start stmt stop
+condition -> expression relation expression
+relation -> < | <= | == | != | >= | >

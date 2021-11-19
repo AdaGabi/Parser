@@ -4,6 +4,7 @@ class Grammar:
         self.__terminals = set()
         self.__start_symbol = None
         self.__productions = dict()
+        self.__is_CFG = True
         self.__read_grammar(file_name)
 
     def __read_grammar(self, file_name):
@@ -16,13 +17,18 @@ class Grammar:
         while production_line != "":
             left, right = production_line.split("->")
             left = left.strip()
+
+            if len(left.split(" ")) > 1:
+                self.__is_CFG = False
+
             right = [p.strip() for p in right.strip().split('|')]
 
             if left not in self.__productions:
                 self.__productions[left] = []
 
             for index in range(len(right)):
-                self.__productions[left].append((right[index], production_index))
+                self.__productions[left].append(
+                    (right[index], production_index))
                 production_index += 1
 
             production_line = file.readline().strip()
@@ -30,9 +36,16 @@ class Grammar:
     def get_productions_string(self):
         production_string = ""
         for p in self.__productions:
-            production_string += p + ' -> ' + ' | '.join([r[0] for r in self.__productions[p]]) + '\n'
+            production_string += p + ' -> ' + \
+                ' | '.join([r[0] for r in self.__productions[p]]) + '\n'
 
         return production_string
+
+    def get_productions_non_terminal(self, non_terminal):
+        return self.__productions[non_terminal]
+
+    def check_CFG(self):
+        return self.__is_CFG
 
     def __str__(self):
         return "Non-terminals: " + ' '.join(self.__non_terminals) + "\n" + \
@@ -41,5 +54,8 @@ class Grammar:
                "Productions:\n" + self.get_productions_string()
 
 
-g = Grammar("g1.txt")
-print(g)
+g = Grammar("g2.txt")
+
+# print(g.check_CFG())
+print(g.get_productions_non_terminal('type'))
+# print(g)

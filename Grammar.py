@@ -49,6 +49,12 @@ class Grammar:
     
     def get_terminals(self):
         return self.__terminals
+    
+    def get_start_symbol(self):
+        return self.__start_symbol
+    
+    def get_productions(self):
+        return self.__productions
 
     def check_CFG(self):
         return self.__is_CFG
@@ -60,8 +66,8 @@ class Grammar:
                "Productions:\n" + self.get_productions_string()
 
 
-# g = Grammar("g2.txt")
+g = Grammar("g1.txt")
 
 # print(g.check_CFG())
-# print(g.get_productions_non_terminal('type'))
+# print(g.get_productions_non_terminal('A'))
 # print(g)

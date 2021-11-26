@@ -60,8 +60,10 @@ class Parser:
                         first_set: set = self.first(follow_symbol)
                         if 'Є' in first_set:
                             first_set.remove('Є')
-                            follow = follow.union(follow(nt))
+                            follow = follow.union(self.follow(nt))
                         follow = follow.union(first_set)
+                else:
+                    follow = follow.union(self.follow(nt))
                 
         return follow
 

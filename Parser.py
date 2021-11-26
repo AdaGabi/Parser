@@ -40,8 +40,7 @@ class Parser:
 
         follow = set()
         if non_terminal == self.__grammar.get_start_symbol():
-            follow.add("$") 
-            return follow
+            follow.add('Є') 
 
         for nt in self.__grammar.get_productions():
             for production, _ in self.__grammar.get_productions_non_terminal(nt):
@@ -72,5 +71,5 @@ g = Grammar("g1.txt")
 p = Parser(g)
 # print(p.first("S"))
 print('Foolo')
-print(p.follow('B'))
+# print(p.follow('B'))
 

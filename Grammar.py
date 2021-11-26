@@ -44,6 +44,12 @@ class Grammar:
     def get_productions_non_terminal(self, non_terminal):
         return self.__productions[non_terminal]
 
+    def get_non_terminals(self):
+        return self.__non_terminals
+    
+    def get_terminals(self):
+        return self.__terminals
+
     def check_CFG(self):
         return self.__is_CFG
 
@@ -54,8 +60,8 @@ class Grammar:
                "Productions:\n" + self.get_productions_string()
 
 
-g = Grammar("g2.txt")
+# g = Grammar("g2.txt")
 
 # print(g.check_CFG())
-print(g.get_productions_non_terminal('type'))
+# print(g.get_productions_non_terminal('type'))
 # print(g)

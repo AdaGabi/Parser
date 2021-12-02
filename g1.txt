@@ -1,11 +1,11 @@
-S A B C
-a b c d
+S A B C E
+( ) + * int
 S
-S -> A a | B B
-A -> b A | c
-B -> C a
-C -> d
-
+S -> A B
+A -> ( S ) | int C | epsilon
+B -> + S | E | epsilon
+C -> * A | E
+E -> *
 
 E T R F S
 id ( ) + *
@@ -16,13 +16,25 @@ T -> F S
 S -> * F S | epsilon
 F -> id | ( E )
 
-
-S A B C E
-( ) + * int
+S A B C D
+a b c
 S
-S -> A B
-A -> ( S ) | int C
-B -> + S | E
-C -> * A | E
-E -> *
+S -> a A b | B A
+A -> a A | c A | c
+B -> D C
+D -> epsilon | b
+C -> c
+
+
+
+S A B C
+a b c d
+S
+S -> A a | B B
+A -> b A | c
+B -> C a
+C -> d
+
+
+
 

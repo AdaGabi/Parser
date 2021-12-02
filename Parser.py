@@ -1,4 +1,5 @@
 from Grammar import Grammar
+import copy
 
 
 class Parser:
@@ -22,15 +23,35 @@ class Parser:
         first = set()
         if non_terminal != "epsilon":
             for production, _ in self.__grammar.get_productions_non_terminal(non_terminal):
-                first_symbol = production.split(' ')[0]
-                if first_symbol == "epsilon":
-                    first.add(first_symbol)
+                symbols = production.split(' ')
+
+                if symbols[0] == "epsilon":
+                    first.add(symbols[0])
                     self.__need_follow = True
-                elif first_symbol in self.__grammar.get_terminals():
-                    first.add(first_symbol)
+                elif symbols[0] in self.__grammar.get_terminals():
+                    first.add(symbols[0])
                 else:
-                    for symbol in self.first(first_symbol):
-                        first.add(symbol)
+                    has_epsilon = False  # suppose there is no epsilon
+                    for symbol in self.first(symbols[0]):
+                        if symbol == "epsilon":
+                            has_epsilon = True
+                        else:
+                            first.add(symbol)
+
+                    idx = 1
+                    epsilon_occurrences = 1
+                    while has_epsilon and idx < len(symbols):
+                        has_epsilon = False  # suppose there is no epsilon
+                        for symbol in self.first(symbols[idx]):
+                            if symbol == "epsilon":
+                                has_epsilon = True
+                                epsilon_occurrences += 1
+                            else:
+                                first.add(symbol)
+                        idx += 1
+
+                    if has_epsilon and epsilon_occurrences == len(symbols):
+                        first.add("epsilon")
 
         return first
 
@@ -54,6 +75,7 @@ class Parser:
 
                 symbols: list = production.split(' ')
 
+                # non-terminal is in the right side of the production
                 if symbols.index(non_terminal) < len(symbols) - 1:
                     follow_symbol = symbols[symbols.index(non_terminal) + 1]
                     if follow_symbol == "epsilon":
@@ -61,14 +83,14 @@ class Parser:
                     elif follow_symbol in self.__grammar.get_terminals():
                         follow.add(follow_symbol)
                     else:
-                        first_set: set = self.first(follow_symbol)
+                        first_set: set = copy.deepcopy(self.first(follow_symbol))
                         if "epsilon" in first_set:
                             first_set.remove("epsilon")
                             follow = follow.union(self.follow(nt))
                         follow = follow.union(first_set)
-                else:
-                    # follow = follow.union(self.follow(nt))
-                    follow.add("epsilon")
+                # else:
+                #     follow = follow.union(self.follow(nt))
+                # follow.add("epsilon")
 
         return follow
 

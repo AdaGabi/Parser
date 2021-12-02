@@ -1,3 +1,22 @@
+S A B C
+a b c d
+S
+S -> A a | B B
+A -> b A | c
+B -> C a
+C -> d
+
+
+E T R F S
+id ( ) + *
+E
+E -> T R
+R -> + T R | epsilon
+T -> F S
+S -> * F S | epsilon
+F -> id | ( E )
+
+
 S A B C E
 ( ) + * int
 S
@@ -6,3 +25,4 @@ A -> ( S ) | int C
 B -> + S | E
 C -> * A | E
 E -> *
+

@@ -1,7 +1,7 @@
 S B C
 a b c d
 S
-S -> B C | C d
+S -> B b | C d
 B -> a B | epsilon
 C -> c C | epsilon
 

@@ -13,6 +13,7 @@ class Parser:
         self.__compute_first_set()
         if self.__need_follow:
             self.__compute_follow_set()
+        self.ll1_table()
 
     def __compute_first_set(self):
         for non_terminal in self.__grammar.get_non_terminals():
@@ -146,6 +147,18 @@ class Parser:
 
         return follow_string
 
+    def print_ll1_table(self):
+        symbols = list(self.__grammar.get_non_terminals() | self.__grammar.get_terminals())
+        symbols.append("$")
+        terminals = list(self.__grammar.get_terminals())
+        terminals.append("$")
+        ll1_table_string = ' '.join([s for s in symbols]) + "\n"
+
+        for s in symbols:
+            ll1_table_string += s + ": " + ' '.join([str(self.__ll1_table[s, t]) for t in terminals]) + "\n"
+
+        print(ll1_table_string)
+
     def ll1_table(self):
         symbols = self.__grammar.get_non_terminals() | self.__grammar.get_terminals() | {"$"}
         for s in symbols:
@@ -169,7 +182,7 @@ class Parser:
                     if x != "epsilon":
                         self.__ll1_table[nt, x] = (production, index)
 
-        print(self.__ll1_table)
+        return self.__ll1_table
 
 
 g = Grammar("g1.txt")
@@ -177,4 +190,4 @@ p = Parser(g)
 print(p.get_first_string())
 print("Follow")
 print(p.get_follow_string())
-p.ll1_table()
+p.print_ll1_table()

@@ -1,11 +1,9 @@
-E T R F S
-id ( ) + *
-E
-E -> T R
-R -> + T R | epsilon
-T -> F S
-S -> * F S | epsilon
-F -> id | ( E )
+S B C
+a b c d
+S
+S -> B C | C d
+B -> a B | epsilon
+C -> c C | epsilon
 
 S A B C D
 a b c
@@ -15,6 +13,17 @@ A -> a A | c A | c
 B -> D C
 D -> epsilon | b
 C -> c
+
+E T R F S
+id ( ) + *
+E
+E -> T R
+R -> + T R | epsilon
+T -> F S
+S -> * F S | epsilon
+F -> id | ( E )
+
+
 
 
 

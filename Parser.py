@@ -55,53 +55,21 @@ class Parser:
 
         return first
 
-    def __compute_follow_set(self):
-        for non_terminal in self.__grammar.get_non_terminals():
-            self.__follow_set[non_terminal] = self.follow(non_terminal)
-
-    def follow(self, non_terminal):
-        if non_terminal in self.__follow_set:
-            return self.__follow_set[non_terminal]
-
-        follow = set()
-        if non_terminal == self.__grammar.get_start_symbol():
-            follow.add("epsilon")
-
-        for nt in self.__grammar.get_productions():
-            for production, _ in self.__grammar.get_productions_non_terminal(nt):
-                if non_terminal not in production:
-                    continue
-
-                symbols: list = production.split(' ')
-
-                # non-terminal is in the right side of the production
-                if symbols.index(non_terminal) < len(symbols) - 1:
-                    follow_symbol = symbols[symbols.index(non_terminal) + 1]
-                    if follow_symbol in self.__grammar.get_terminals():
-                        follow.add(follow_symbol)
-                    else:
-                        first_set: set = copy.deepcopy(self.first(follow_symbol))
-                        if "epsilon" in first_set:
-                            first_set.remove("epsilon")
-                            follow = follow.union(self.follow(nt))
-                        follow = follow.union(first_set)
-                else:
-                    if nt == non_terminal:
-                        continue
-                    follow = follow.union(self.follow(nt))
-
-        return follow
     
-    def follow_alg(self):
-        follow_set = dict()
+    def __compute_follow_set(self):
+        follow_sets = list()
+        follow_sets.append(dict())
         
         for non_terminal in self.__grammar.get_non_terminals():
-            follow_set[non_terminal] = set()
+            follow_sets[0][non_terminal] = set()
             
-        follow_set[self.__grammar.get_start_symbol()].add("epsilon")
+        follow_sets[0][self.__grammar.get_start_symbol()] = {"epsilon"}
+        
+        i = 0
         
         while True:
-            prev_follow_set = follow_set.copy()
+            i += 1
+            current_follow = copy.deepcopy(follow_sets[i-1])
             for non_terminal in self.__grammar.get_non_terminals():
                 for nt in self.__grammar.get_productions():
                     for production, _ in self.__grammar.get_productions_non_terminal(nt):
@@ -113,22 +81,28 @@ class Parser:
                         if symbols.index(non_terminal) < len(symbols) - 1:
                             follow_symbol = symbols[symbols.index(non_terminal) + 1]
                             if follow_symbol in self.__grammar.get_terminals():
-                                follow_set[non_terminal].add(follow_symbol)
+                                current_follow[non_terminal].add(follow_symbol)
                             else:
                                 first_set: set = copy.deepcopy(self.first(follow_symbol))
                                 if "epsilon" in first_set:
                                     first_set.remove("epsilon")
-                                    follow_set[non_terminal] = follow_set[non_terminal].union(follow_set[nt])
-                                follow_set[non_terminal] = follow_set[non_terminal].union(first_set)
+                                    print(follow_sets[i-1][nt])
+                                    current_follow[non_terminal] = current_follow[non_terminal].union(follow_sets[i-1][nt])
+                                current_follow[non_terminal] = current_follow[non_terminal].union(first_set)
                         else:
                             if nt == non_terminal:
                                 continue
-                            follow_set[non_terminal] = follow_set[non_terminal].union(follow_set[nt])
-                
-            if prev_follow_set == follow_set:
+                            current_follow[non_terminal] = current_follow[non_terminal].union(follow_sets[i-1][nt])
+                            
+            follow_sets.append(current_follow)
+
+            if follow_sets[i] == follow_sets[i-1]:
                 break
-            
-        return follow_set
+        
+        for e in follow_sets:
+            print(e)
+            print()
+        self.__follow_set = follow_sets.pop()
         
 
     def get_first_string(self):
@@ -151,4 +125,3 @@ p = Parser(g)
 print(p.get_first_string())
 print("Follow")
 print(p.get_follow_string())
-print(p.follow_alg())

@@ -16,7 +16,15 @@ class Parser:
         for non_terminal in self.__grammar.get_non_terminals():
             self.__first_set[non_terminal] = self.first(non_terminal)
 
-    def first(self, non_terminal):
+    def first(self, sequence):
+        symbols = sequence.split(' ')
+        
+        if symbols[0] in self.__grammar.get_terminals():
+            return {symbols[0]}
+
+        non_terminal = symbols[0]
+        
+        
         if non_terminal in self.__first_set:
             return self.__first_set[non_terminal]
 
@@ -80,15 +88,12 @@ class Parser:
 
                         if symbols.index(non_terminal) < len(symbols) - 1:
                             follow_symbol = symbols[symbols.index(non_terminal) + 1]
-                            if follow_symbol in self.__grammar.get_terminals():
-                                current_follow[non_terminal].add(follow_symbol)
-                            else:
-                                first_set: set = copy.deepcopy(self.first(follow_symbol))
-                                if "epsilon" in first_set:
-                                    first_set.remove("epsilon")
-                                    print(follow_sets[i-1][nt])
-                                    current_follow[non_terminal] = current_follow[non_terminal].union(follow_sets[i-1][nt])
-                                current_follow[non_terminal] = current_follow[non_terminal].union(first_set)
+                            
+                            first_set: set = copy.deepcopy(self.first(follow_symbol))
+                            if "epsilon" in first_set:
+                                first_set.remove("epsilon")
+                                current_follow[non_terminal] = current_follow[non_terminal].union(follow_sets[i-1][nt])
+                            current_follow[non_terminal] = current_follow[non_terminal].union(first_set)
                         else:
                             if nt == non_terminal:
                                 continue
@@ -99,9 +104,6 @@ class Parser:
             if follow_sets[i] == follow_sets[i-1]:
                 break
         
-        for e in follow_sets:
-            print(e)
-            print()
         self.__follow_set = follow_sets.pop()
         
 

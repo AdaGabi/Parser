@@ -1,12 +1,3 @@
-S A B C E
-( ) + * int
-S
-S -> A B
-A -> ( S ) | int C | epsilon
-B -> + S | E | epsilon
-C -> * A | E
-E -> *
-
 E T R F S
 id ( ) + *
 E

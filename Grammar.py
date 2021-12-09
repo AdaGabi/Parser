@@ -66,7 +66,7 @@ class Grammar:
                "Productions:\n" + self.get_productions_string()
 
 
-g = Grammar("g1.txt")
+# g = Grammar("g1.txt")
 
 # print(g.check_CFG())
 # print(g.get_productions_non_terminal('A'))

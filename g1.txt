@@ -5,6 +5,14 @@ S -> B b | C d
 B -> a B | epsilon
 C -> c C | epsilon
 
+S A
+a b c
+S
+S -> A a | a
+A -> b A | c
+
+
+
 S A B C D
 a b c
 S

@@ -113,30 +113,27 @@ class Parser:
             i += 1
             current_follow = copy.deepcopy(follow_sets[i - 1])
             for non_terminal in self.__grammar.get_non_terminals():
-                if non_terminal == "assignstmt":
-                    print('af')
-                    pass
                 for nt in self.__grammar.get_productions():
                     for production, _ in self.__grammar.get_productions_non_terminal(nt):
-                        # if non_terminal not in production:
-                        #     continue
-
                         symbols: list = production.split(' ')
                         if non_terminal not in symbols:
                             continue
-                        if symbols.index(non_terminal) < len(symbols) - 1:
-                            follow_symbol = symbols[symbols.index(non_terminal) + 1]
+                        
+                        indices = [i+1 for i, x in enumerate(symbols) if x == non_terminal]   
+                        for idx in indices:
+                            if idx < len(symbols):
+                                follow_symbol = symbols[idx]
 
-                            first_set: set = copy.deepcopy(self.first(follow_symbol))
-                            if "epsilon" in first_set:
-                                first_set.remove("epsilon")
-                                current_follow[non_terminal] = current_follow[non_terminal].union(
-                                    follow_sets[i - 1][nt])
-                            current_follow[non_terminal] = current_follow[non_terminal].union(first_set)
-                        else:
-                            if nt == non_terminal:
-                                continue
-                            current_follow[non_terminal] = current_follow[non_terminal].union(follow_sets[i - 1][nt])
+                                first_set: set = copy.deepcopy(self.first(follow_symbol))
+                                if "epsilon" in first_set:
+                                    first_set.remove("epsilon")
+                                    current_follow[non_terminal] = current_follow[non_terminal].union(
+                                        follow_sets[i - 1][nt])
+                                current_follow[non_terminal] = current_follow[non_terminal].union(first_set)
+                            else:
+                                if nt == non_terminal:
+                                    continue
+                                current_follow[non_terminal] = current_follow[non_terminal].union(follow_sets[i - 1][nt])
 
             follow_sets.append(current_follow)
 

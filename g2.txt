@@ -1,5 +1,5 @@
 program declaration type typeTemp cmpdstmt stmtlist stmt stmtTemp simplstmt structstmt ifstmt tempIf forstmt forheader whilestmt assignstmt arithmetic1 arithmetic2 multiply1 multiply2 expression IndexedIdentifier iostmt condition relation
-go number array string { } ; + - * / ( ) while for if else cin cout << >> id const lt lte is dif gte gt eq
+go number array string { } ; + - * / ( ) [ ] while for if else cin cout << >> id const lt lte is dif gte gt eq
 program
 program -> go cmpdstmt
 declaration -> type id

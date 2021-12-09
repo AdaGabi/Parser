@@ -13,7 +13,7 @@ class Parser:
         self.__compute_first()
         if self.__need_follow:
             self.__compute_follow_set()
-        # self.ll1_table()
+        self.ll1_table()
 
     def __compute_first(self):
         prev_first_set = dict()
@@ -181,7 +181,10 @@ class Parser:
 
         for nt in self.__grammar.get_productions():
             for production, index in self.__grammar.get_productions_non_terminal(nt):
-                first = self.first(production)
+                try:
+                    first = self.first(production)
+                except Exception as e:
+                    print("PRODUCTION", production)
 
                 if "epsilon" in first:
                     follow = self.__follow_set[nt]
@@ -227,12 +230,16 @@ class Parser:
                     rhs_production = ll1_entry[0].split()
                     working_stack = rhs_production + working_stack  # add the new symbols
                     output_stack += [ll1_entry[1]]  # add the production number
+                    
+        return output_stack
 
 
 g = Grammar("g2.txt")
 p = Parser(g)
-print(p.get_first_string())
-print("Follow")
-print(p.get_follow_string())
+# print(p.get_first_string())
+# print("Follow")
+# print(p.get_follow_string())
 # p.print_ll1_table()
-# print(p.parsing_algo("a a b"))
+stack = p.parsing_algo("go { id eq const ; }")
+print(stack)
+print(g.get_productions())

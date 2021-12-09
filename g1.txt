@@ -5,6 +5,16 @@ S -> B b | C d
 B -> a B | epsilon
 C -> c C | epsilon
 
+S A B C
+a b c d
+S
+S -> A a | B B
+A -> b A | c
+B -> C a
+C -> d
+
+
+
 S A
 a b c
 S
@@ -35,13 +45,6 @@ F -> id | ( E )
 
 
 
-S A B C
-a b c d
-S
-S -> A a | B B
-A -> b A | c
-B -> C a
-C -> d
 
 
 

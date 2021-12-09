@@ -233,13 +233,41 @@ class Parser:
                     
         return output_stack
 
+    def tree(self, output_stack):
+        tree = list()
+        tree.append({"index": 1, "info": self.__grammar.get_start_symbol(), "parent": 0, "left": 0})
 
-g = Grammar("g2.txt")
+        return self.__tree_rec(output_stack, 1, tree)
+
+    def __tree_rec(self, output_stack, parent_index, tree):
+        index = len(tree) + 1
+        prod_index = output_stack.pop(0)
+        production_symbols = self.__grammar.get_production_by_index(prod_index)[1].split(' ')
+        left = 0
+        indexes = []
+        for s in production_symbols:
+            tree.append({"index": index, "info": s, "parent": parent_index, "left": left})
+            indexes.append(index)
+            left = index
+            index += 1
+
+        for i in range(len(production_symbols)):
+            if production_symbols[i] in self.__grammar.get_non_terminals():
+                self.__tree_rec(output_stack, indexes[i], tree)
+
+        if len(output_stack) == 0:
+            return tree
+
+
+g = Grammar("g1.txt")
 p = Parser(g)
 # print(p.get_first_string())
 # print("Follow")
 # print(p.get_follow_string())
 # p.print_ll1_table()
-stack = p.parsing_algo("go { id eq const ; }")
-print(stack)
-print(g.get_productions())
+# stack = p.parsing_algo("go { id eq const ; }")
+# print(stack)
+# print(g.get_productions())
+output = p.parsing_algo("d a d a")
+print(output)
+print(p.tree(output))

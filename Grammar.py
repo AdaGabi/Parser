@@ -41,6 +41,12 @@ class Grammar:
 
         return production_string
 
+    def get_production_by_index(self, index):
+        for nt in self.__non_terminals:
+            for right, idx in self.get_productions_non_terminal(nt):
+                if idx == index:
+                    return nt, right
+
     def get_productions_non_terminal(self, non_terminal):
         return self.__productions[non_terminal]
 

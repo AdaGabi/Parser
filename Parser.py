@@ -13,7 +13,7 @@ class Parser:
         self.__compute_first()
         if self.__need_follow:
             self.__compute_follow_set()
-        self.ll1_table()
+        # self.ll1_table()
 
     def __compute_first(self):
         prev_first_set = dict()
@@ -25,6 +25,9 @@ class Parser:
             current_first = copy.deepcopy(prev_first_set)
 
             for non_terminal in self.__grammar.get_non_terminals():
+                # if non_terminal == "simplstmt":
+                #     print(non_terminal)
+                #     pass
                 for production, _ in self.__grammar.get_productions_non_terminal(non_terminal):
                     symbols = production.split(' ')
 
@@ -35,27 +38,6 @@ class Parser:
                         current_first[non_terminal].add(symbols[0])
                     else:
                         concatenation_result = self.__concatenation_length1(symbols, prev_first_set)
-                        # set1 = prev_first_set[symbols[0]]
-                        # if len(set1) > 0:
-                        #     i = 1
-                        #     while i < len(symbols):
-                        #         if symbols[i] in self.__grammar.get_terminals():
-                        #             set2 = {symbols[i]}
-                        #         else:
-                        #             set2 = prev_first_set[symbols[i]]
-                        #         if len(set2) == 0:
-                        #             break
-                        #
-                        #         for s1 in set1:
-                        #             for s2 in set2:
-                        #                 if s1 == 'epsilon':
-                        #                     concatenation_result.add(s2[0])
-                        #                 else:
-                        #                     concatenation_result.add(s1[0])
-                        #
-                        #         set1 = set2
-                        #         i += 1
-                        #     current_first[non_terminal] = current_first[non_terminal].union(concatenation_result)
                         current_first[non_terminal] = current_first[non_terminal].union(concatenation_result)
 
             different = False
@@ -87,6 +69,9 @@ class Parser:
         else:
             set1 = first_set[symbols[0]]
 
+        if len(symbols) == 1:
+            return set1
+
         if len(set1) > 0:
             concatenation_result = set()
             i = 1
@@ -102,9 +87,9 @@ class Parser:
                 for s1 in set1:
                     for s2 in set2:
                         if s1 == 'epsilon':
-                            concatenation_result.add(s2[0])
+                            concatenation_result.add(s2)
                         else:
-                            concatenation_result.add(s1[0])
+                            concatenation_result.add(s1)
 
                 set1 = set2
                 i += 1
@@ -128,13 +113,17 @@ class Parser:
             i += 1
             current_follow = copy.deepcopy(follow_sets[i - 1])
             for non_terminal in self.__grammar.get_non_terminals():
+                if non_terminal == "assignstmt":
+                    print('af')
+                    pass
                 for nt in self.__grammar.get_productions():
                     for production, _ in self.__grammar.get_productions_non_terminal(nt):
-                        if non_terminal not in production:
-                            continue
+                        # if non_terminal not in production:
+                        #     continue
 
                         symbols: list = production.split(' ')
-
+                        if non_terminal not in symbols:
+                            continue
                         if symbols.index(non_terminal) < len(symbols) - 1:
                             follow_symbol = symbols[symbols.index(non_terminal) + 1]
 
@@ -158,14 +147,14 @@ class Parser:
 
     def get_first_string(self):
         first_string = ""
-        for key in self.__first_set:
+        for key in sorted(list(self.__first_set)):
             first_string += key + ": " + str(self.__first_set[key]) + "\n"
 
         return first_string
 
     def get_follow_string(self):
         follow_string = ""
-        for key in self.__follow_set:
+        for key in sorted(list(self.__follow_set)):
             follow_string += key + ": " + str(self.__follow_set[key]) + "\n"
 
         return follow_string
@@ -243,10 +232,10 @@ class Parser:
                     output_stack += [ll1_entry[1]]  # add the production number
 
 
-g = Grammar("g1.txt")
+g = Grammar("g2.txt")
 p = Parser(g)
 print(p.get_first_string())
 print("Follow")
 print(p.get_follow_string())
-p.print_ll1_table()
-print(p.parsing_algo("a a b"))
+# p.print_ll1_table()
+# print(p.parsing_algo("a a b"))

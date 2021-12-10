@@ -1,9 +1,9 @@
 program declaration type typeTemp cmpdstmt stmtlist stmt stmtTemp simplstmt structstmt ifstmt tempIf forstmt forheader whilestmt assignstmt arithmetic1 arithmetic2 multiply1 multiply2 expression IndexedIdentifier iostmt condition relation
-number start stop array string { } . + - * / ( ) [ ] while for if else getInput giveOutput id const < <= == != >= > =
+int start stop array string { } . + - * / ( ) [ ] while for if else getInput giveOutput id const < <= == != >= > =
 program
 program -> cmpdstmt
 declaration -> type id
-type -> string | number typeTemp
+type -> string | int typeTemp
 typeTemp -> epsilon | array [ const ]
 cmpdstmt -> start stmtlist stop
 stmtlist -> stmt stmtTemp
@@ -14,7 +14,7 @@ structstmt -> cmpdstmt | ifstmt | whilestmt | forstmt
 ifstmt -> if condition stmt tempIf
 tempIf -> epsilon | else stmt
 forstmt -> for forheader stmt
-forheader -> ( number assignstmt . condition . assignstmt )
+forheader -> ( int assignstmt . condition . assignstmt )
 whilestmt -> while condition stmt
 assignstmt -> id = expression
 expression -> arithmetic2 arithmetic1

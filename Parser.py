@@ -3,13 +3,14 @@ import copy
 
 
 class Parser:
-    def __init__(self, grammar: Grammar):
+    def __init__(self, grammar: Grammar, file_name):
         self.__first_set = dict()
         self.__follow_set = dict()
         self.__grammar: Grammar = grammar
         self.__need_follow = False
         self.__ll1_table = dict()
         self.__parsing_tree = list()
+        self.__read_sequence(file_name)
 
         self.__compute_first()
         if self.__need_follow:
@@ -119,8 +120,8 @@ class Parser:
                         symbols: list = production.split(' ')
                         if non_terminal not in symbols:
                             continue
-                        
-                        indices = [i+1 for i, x in enumerate(symbols) if x == non_terminal]   
+
+                        indices = [i+1 for i, x in enumerate(symbols) if x == non_terminal]
                         for idx in indices:
                             if idx < len(symbols):
                                 follow_symbol = symbols[idx]
@@ -197,8 +198,8 @@ class Parser:
 
         return self.__ll1_table
 
-    def parsing_algo(self, sequence):
-        input_stack = sequence.split(' ')
+    def parsing_algo(self):
+        input_stack = self.__sequence.split(' ')
         working_stack = list()
         output_stack = list()
 
@@ -259,20 +260,25 @@ class Parser:
             return
 
     def print_parsing_tree(self):
+        file = open("out.txt", 'w')
         for line in self.__parsing_tree:
-            print("index: ", line["index"], "info: ", line["info"], "parent: ", line["parent"], "left: ", line["left"])
+            file.write("index: " + str(line["index"]) + " info: " + line["info"] + " parent: " + str(line["parent"]) +  " left: " + str(line["left"]) + "\n")
+
+        file.close()
+
+    def __read_sequence(self, file_name):
+        self.__sequence = ""
+        file = open(file_name, 'r')
+        line = file.readline().strip()
+        while line != "":
+            self.__sequence += line + ' '
+            line = file.readline().strip()
+
+        file.close()
+        self.__sequence = self.__sequence.strip()
 
 
 g = Grammar("g2.txt")
-p = Parser(g)
-# print(p.get_first_string())
-# print("Follow")
-# print(p.get_follow_string())
-# p.print_ll1_table()
-# stack = p.parsing_algo("main start number array [ const ] id . stop")
-stack = p.parsing_algo("main start number id . if ( id != const ) id = const . stop")
+p = Parser(g, "pif.txt")
+p.parsing_algo()
 p.print_parsing_tree()
-# print(g.get_productions())
-# output = p.parsing_algo("d a d a")
-# print(output)
-# print(p.tree(output))

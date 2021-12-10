@@ -239,6 +239,7 @@ class Parser:
         self.__parsing_tree.append({"index": 1, "info": self.__grammar.get_start_symbol(), "parent": 0, "left": 0})
 
         self.__tree_rec(output_stack, 1)
+        self.__print_parsing_tree()
 
     def __tree_rec(self, output_stack, parent_index):
         index = len(self.__parsing_tree) + 1
@@ -259,7 +260,7 @@ class Parser:
         if len(output_stack) == 0:
             return
 
-    def print_parsing_tree(self):
+    def __print_parsing_tree(self):
         file = open("out.txt", 'w')
         for line in self.__parsing_tree:
             file.write("index: " + str(line["index"]) + " info: " + line["info"] + " parent: " + str(line["parent"]) +  " left: " + str(line["left"]) + "\n")
@@ -278,7 +279,7 @@ class Parser:
         self.__sequence = self.__sequence.strip()
 
 
-g = Grammar("g2.txt")
-p = Parser(g, "pif.txt")
+g = Grammar("g1.txt")
+# p = Parser(g, "pif.txt")
+p = Parser(g, "seq.txt")
 p.parsing_algo()
-p.print_parsing_tree()

@@ -1,30 +1,28 @@
-program decllist declaration declarationAssign type1 arraydecl mapdecl type cmpdstmt stmtlist stmt simplstmt assignstmt expression term factor iostmt structstmt ifstmt whilestmt forstmt condition relation forstart declOrDeclAssign sign operator
-identifier = bool char int string const . , map start stop + - * / % giveInput getOutput ( ) if else while for < <= == != >= > [ ] { }
+program declaration type typeTemp cmpdstmt stmtlist stmt stmtTemp simplstmt structstmt ifstmt tempIf forstmt forheader whilestmt assignstmt arithmetic1 arithmetic2 multiply1 multiply2 expression IndexedIdentifier iostmt condition relation
+int start stop array string { } . + - * / ( ) [ ] while for if else getInput giveOutput id const < <= == != >= > =
 program
-program -> decllist . cmpdstmt .
-declOrDeclAssign -> declaration | declarationAssign
-decllist -> declOrDeclAssign | declOrDeclAssign . decllist
-declaration -> type identifier
-declarationAssign -> type identifier = expression
-type1 -> bool | char | int | string
-arraydecl -> type1 [ const ]
-mapdecl -> map { type1 , type2 } 
-type -> type1 | arraydecl | mapdecl
+program -> cmpdstmt
+declaration -> type id
+type -> string | int typeTemp
+typeTemp -> epsilon | array [ const ]
 cmpdstmt -> start stmtlist stop
-stmtlist -> stmt | stmt . stmtlist
-stmt -> simplstmt | structstmt
-simplstmt -> assignstmt | iostmt
-assignstmt -> identifier = expression
-sign -> + | -
-expression -> expression sign term | term
-operator -> * | / | %
-term -> term operator factor | factor
-factor -> ( expression ) | identifier
-iostmt -> giveInput | getOutput (  expression )
-structstmt -> cmpdstmt | ifstmt | whilestmt
-ifstmt -> if ( condition ) start stmt else stmt stop | if ( condition ) start stmt stop
-whilestmt -> while ( condition ) start stmt stop
-forstart -> declarationAssign | assignstmt
-forstmt -> for ( forstart . condition . assignstmt ) start stmt stop
-condition -> expression relation expression
+stmtlist -> stmt stmtTemp
+stmtTemp -> epsilon | stmtlist
+stmt -> simplstmt . | structstmt
+simplstmt -> assignstmt | iostmt | declaration
+structstmt -> cmpdstmt | ifstmt | whilestmt | forstmt
+ifstmt -> if condition stmt tempIf
+tempIf -> epsilon | else stmt
+forstmt -> for forheader stmt
+forheader -> ( int assignstmt . condition . assignstmt )
+whilestmt -> while condition stmt
+assignstmt -> id = expression
+expression -> arithmetic2 arithmetic1
+arithmetic1 -> + arithmetic2 arithmetic1 | - arithmetic2 arithmetic1 | epsilon
+arithmetic2 -> multiply2 multiply1
+multiply1 -> * multiply2 multiply1 | / multiply2 multiply1 | epsilon
+multiply2 -> ( expression ) | id | const
+IndexedIdentifier -> id [ const ]
+iostmt -> getInput ( id ) | giveOutput ( id )
+condition -> ( id relation const )
 relation -> < | <= | == | != | >= | >

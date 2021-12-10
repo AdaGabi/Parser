@@ -1,9 +1,29 @@
+S A B C
+a b c d
+S
+S -> A a | B B
+A -> b A | c
+B -> C a
+C -> d | d c
+
 S B C
 a b c d
 S
 S -> B b | C d
 B -> a B | epsilon
 C -> c C | epsilon
+
+
+
+
+
+S A
+a b c
+S
+S -> A a | a
+A -> b A | c
+
+
 
 S A B C D
 a b c
@@ -27,13 +47,6 @@ F -> id | ( E )
 
 
 
-S A B C
-a b c d
-S
-S -> A a | B B
-A -> b A | c
-B -> C a
-C -> d
 
 
 

@@ -3,92 +3,102 @@ import copy
 
 
 class Parser:
-    def __init__(self, grammar: Grammar):
+    def __init__(self, grammar: Grammar, file_name):
         self.__first_set = dict()
         self.__follow_set = dict()
         self.__grammar: Grammar = grammar
-        self.__need_follow = True
+        self.__need_follow = False
         self.__ll1_table = dict()
+        self.__parsing_tree = list()
+        self.__read_sequence(file_name)
 
-        self.__compute_first_set()
+        self.__compute_first()
         if self.__need_follow:
             self.__compute_follow_set()
         self.ll1_table()
 
-    def __compute_first_set(self):
+    def __compute_first(self):
+        prev_first_set = dict()
+
         for non_terminal in self.__grammar.get_non_terminals():
-            self.__first_set[non_terminal] = self.first(non_terminal)
+            prev_first_set[non_terminal] = set()
 
-    def first_non_terminal(self, non_terminal):
-        if non_terminal in self.__first_set:
-            return self.__first_set[non_terminal]
+        while True:
+            current_first = copy.deepcopy(prev_first_set)
 
-        first = set()
-        if non_terminal != "epsilon":
-            for production, _ in self.__grammar.get_productions_non_terminal(non_terminal):
-                symbols = production.split(' ')
+            for non_terminal in self.__grammar.get_non_terminals():
+                # if non_terminal == "simplstmt":
+                #     print(non_terminal)
+                #     pass
+                for production, _ in self.__grammar.get_productions_non_terminal(non_terminal):
+                    symbols = production.split(' ')
 
-                if symbols[0] == "epsilon":
-                    first.add(symbols[0])
-                    self.__need_follow = True
-                elif symbols[0] in self.__grammar.get_terminals():
-                    first.add(symbols[0])
-                else:
-                    has_epsilon = False  # suppose there is no epsilon
-                    for symbol in self.first(symbols[0]):
-                        if symbol == "epsilon":
-                            has_epsilon = True
-                        else:
-                            first.add(symbol)
+                    if symbols[0] in self.__grammar.get_terminals():
+                        current_first[non_terminal].add(symbols[0])
+                    elif symbols[0] == 'epsilon':
+                        self.__need_follow = True
+                        current_first[non_terminal].add(symbols[0])
+                    else:
+                        concatenation_result = self.__concatenation_length1(symbols, prev_first_set)
+                        current_first[non_terminal] = current_first[non_terminal].union(concatenation_result)
 
-                    idx = 1
-                    epsilon_occurrences = 1
-                    while has_epsilon and idx < len(symbols):
-                        has_epsilon = False  # suppose there is no epsilon
-                        for symbol in self.first(symbols[idx]):
-                            if symbol == "epsilon":
-                                has_epsilon = True
-                                epsilon_occurrences += 1
-                            else:
-                                first.add(symbol)
-                        idx += 1
+            different = False
+            for key in current_first:
+                if current_first[key] != prev_first_set[key]:
+                    different = True
 
-                    if has_epsilon and epsilon_occurrences == len(symbols):
-                        first.add("epsilon")
+            if not different:
+                self.__first_set = current_first
+                return
 
-        return first
+            prev_first_set = copy.deepcopy(current_first)
 
     def first(self, sequence):
+        if sequence == 'epsilon':
+            return sequence
+
         symbols = sequence.split(' ')
-        first = set()
-        idx = 0
-        has_epsilon = True
+        if len(symbols) == 1:
+            if symbols[0] in self.__grammar.get_terminals():
+                return {symbols[0]}
 
-        while idx < len(symbols) and has_epsilon:
-            has_epsilon = False  # suppose there is no epsilon
+            return self.__first_set[symbols[0]]
+        return self.__concatenation_length1(symbols, self.__first_set)
 
-            if symbols[idx] == "epsilon":
-                first.add(symbols[idx])
-                self.__need_follow = True
+    def __concatenation_length1(self, symbols, first_set):
+        if symbols[0] in self.__grammar.get_terminals():
+            set1 = {symbols[0]}
+        else:
+            set1 = first_set[symbols[0]]
 
-            elif symbols[idx] in self.__grammar.get_terminals():
-                first.add(symbols[idx])
+        if len(symbols) == 1:
+            return set1
 
-            else:
-                # compute first for a non-terminal
-                first_non_terminal = self.first_non_terminal(symbols[idx])
+        if len(set1) > 0:
+            concatenation_result = set()
+            i = 1
+            while i < len(symbols):
+                if symbols[i] in self.__grammar.get_terminals():
+                    set2 = {symbols[i]}
+                else:
+                    set2 = first_set[symbols[i]]
 
-                if "epsilon" in first_non_terminal:
-                    has_epsilon = True
-                    for s in first_non_terminal:
-                        if s != "epsilon":
-                            first.add(s)
-            idx += 1
+                if len(set2) == 0:
+                    break
 
-        if has_epsilon:
-            first.add("epsilon")
+                for s1 in set1:
+                    for s2 in set2:
+                        if s1 == 'epsilon':
+                            concatenation_result.add(s2)
+                        else:
+                            concatenation_result.add(s1)
 
-        return first
+                set1 = set2
+                i += 1
+
+            return concatenation_result
+
+        return set1
 
     def __compute_follow_set(self):
         follow_sets = list()
@@ -107,24 +117,25 @@ class Parser:
             for non_terminal in self.__grammar.get_non_terminals():
                 for nt in self.__grammar.get_productions():
                     for production, _ in self.__grammar.get_productions_non_terminal(nt):
-                        if non_terminal not in production:
+                        symbols: list = production.split(' ')
+                        if non_terminal not in symbols:
                             continue
 
-                        symbols: list = production.split(' ')
+                        indices = [i+1 for i, x in enumerate(symbols) if x == non_terminal]
+                        for idx in indices:
+                            if idx < len(symbols):
+                                follow_symbol = symbols[idx]
 
-                        if symbols.index(non_terminal) < len(symbols) - 1:
-                            follow_symbol = symbols[symbols.index(non_terminal) + 1]
-
-                            first_set: set = copy.deepcopy(self.first(follow_symbol))
-                            if "epsilon" in first_set:
-                                first_set.remove("epsilon")
-                                current_follow[non_terminal] = current_follow[non_terminal].union(
-                                    follow_sets[i - 1][nt])
-                            current_follow[non_terminal] = current_follow[non_terminal].union(first_set)
-                        else:
-                            if nt == non_terminal:
-                                continue
-                            current_follow[non_terminal] = current_follow[non_terminal].union(follow_sets[i - 1][nt])
+                                first_set: set = copy.deepcopy(self.first(follow_symbol))
+                                if "epsilon" in first_set:
+                                    first_set.remove("epsilon")
+                                    current_follow[non_terminal] = current_follow[non_terminal].union(
+                                        follow_sets[i - 1][nt])
+                                current_follow[non_terminal] = current_follow[non_terminal].union(first_set)
+                            else:
+                                if nt == non_terminal:
+                                    continue
+                                current_follow[non_terminal] = current_follow[non_terminal].union(follow_sets[i - 1][nt])
 
             follow_sets.append(current_follow)
 
@@ -135,14 +146,14 @@ class Parser:
 
     def get_first_string(self):
         first_string = ""
-        for key in self.__first_set:
+        for key in sorted(list(self.__first_set)):
             first_string += key + ": " + str(self.__first_set[key]) + "\n"
 
         return first_string
 
     def get_follow_string(self):
         follow_string = ""
-        for key in self.__follow_set:
+        for key in sorted(list(self.__follow_set)):
             follow_string += key + ": " + str(self.__follow_set[key]) + "\n"
 
         return follow_string
@@ -152,7 +163,7 @@ class Parser:
         symbols.append("$")
         terminals = list(self.__grammar.get_terminals())
         terminals.append("$")
-        ll1_table_string = ' '.join([s for s in symbols]) + "\n"
+        ll1_table_string = ' '.join([s for s in terminals]) + "\n"
 
         for s in symbols:
             ll1_table_string += s + ": " + ' '.join([str(self.__ll1_table[s, t]) for t in terminals]) + "\n"
@@ -173,21 +184,105 @@ class Parser:
         for nt in self.__grammar.get_productions():
             for production, index in self.__grammar.get_productions_non_terminal(nt):
                 first = self.first(production)
-                print(production, first)
+
                 if "epsilon" in first:
                     follow = self.__follow_set[nt]
                     for y in follow:
+                        if self.__ll1_table[nt, y] != ("error", -1):
+                            print("Conflict at: ", nt, y, "; table already has: ", self.__ll1_table[nt, y])
+                            return
                         self.__ll1_table[nt, y] = (production, index)
                 for x in first:
                     if x != "epsilon":
+                        if self.__ll1_table[nt, x] != ("error", -1):
+                            print("Conflict at: ", nt, x, "; table already has: ", self.__ll1_table[nt, x])
+                            return
                         self.__ll1_table[nt, x] = (production, index)
 
         return self.__ll1_table
 
+    def parsing_algo(self):
+        input_stack = self.__sequence.split(' ')
+        working_stack = list()
+        output_stack = list()
+
+        input_stack.append('$')
+        working_stack.append(self.__grammar.get_start_symbol())
+        working_stack.append('$')
+
+        while len(input_stack) > 0:
+            input_elem = input_stack[0]
+            working_elem = working_stack[0]
+            if working_elem == 'epsilon':
+                working_stack.pop(0)
+            else:
+                ll1_entry = self.__ll1_table[working_elem, input_elem]
+
+                if ll1_entry[0] == 'pop':
+                    working_stack.pop(0)
+                    input_stack.pop(0)
+
+                elif ll1_entry[0] == 'error':
+                    print("Error at: ", input_elem, working_elem)
+                    return
+
+                elif ll1_entry[0] == 'accept':
+                    print("Sequence accepted")
+                    self.tree(output_stack)
+                    return
+
+                else:
+                    working_stack.pop(0)  # eliminate symbol from working stack
+                    rhs_production = ll1_entry[0].split()
+                    working_stack = rhs_production + working_stack  # add the new symbols
+                    output_stack += [ll1_entry[1]]  # add the production number
+
+    def tree(self, output_stack):
+        self.__parsing_tree = list()
+        self.__parsing_tree.append({"index": 1, "info": self.__grammar.get_start_symbol(), "parent": 0, "left": 0})
+
+        self.__tree_rec(output_stack, 1)
+        self.__print_parsing_tree()
+
+    def __tree_rec(self, output_stack, parent_index):
+        index = len(self.__parsing_tree) + 1
+        prod_index = output_stack.pop(0)
+        production_symbols = self.__grammar.get_production_by_index(prod_index)[1].split(' ')
+        left = 0
+        indexes = []
+        for s in production_symbols:
+            self.__parsing_tree.append({"index": index, "info": s, "parent": parent_index, "left": left})
+            indexes.append(index)
+            left = index
+            index += 1
+
+        for i in range(len(production_symbols)):
+            if production_symbols[i] in self.__grammar.get_non_terminals():
+                self.__tree_rec(output_stack, indexes[i])
+
+        if len(output_stack) == 0:
+            return
+
+    def __print_parsing_tree(self):
+        file = open("out.txt", 'w')
+        for line in self.__parsing_tree:
+            file.write("index: " + str(line["index"]) + " info: " + line["info"] + " parent: " + str(line["parent"]) +  " left: " + str(line["left"]) + "\n")
+
+        file.close()
+
+    def __read_sequence(self, file_name):
+        self.__sequence = ""
+        file = open(file_name, 'r')
+        line = file.readline().strip()
+        while line != "":
+            self.__sequence += line + ' '
+            line = file.readline().strip()
+
+        file.close()
+        self.__sequence = self.__sequence.strip()
+
 
 g = Grammar("g1.txt")
-p = Parser(g)
-print(p.get_first_string())
-print("Follow")
-print(p.get_follow_string())
-p.print_ll1_table()
+# p = Parser(g, "pif.txt")
+p = Parser(g, "seq.txt")
+p.parsing_algo()

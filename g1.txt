@@ -4,7 +4,7 @@ S
 S -> A a | B B
 A -> b A | c
 B -> C a
-C -> d
+C -> d | d c
 
 S B C
 a b c d

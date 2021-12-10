@@ -183,17 +183,20 @@ class Parser:
 
         for nt in self.__grammar.get_productions():
             for production, index in self.__grammar.get_productions_non_terminal(nt):
-                try:
-                    first = self.first(production)
-                except Exception as e:
-                    print("PRODUCTION", production)
+                first = self.first(production)
 
                 if "epsilon" in first:
                     follow = self.__follow_set[nt]
                     for y in follow:
+                        if self.__ll1_table[nt, y] != ("error", -1):
+                            print("Conflict at: ", nt, y, "; table already has: ", self.__ll1_table[nt, y])
+                            return
                         self.__ll1_table[nt, y] = (production, index)
                 for x in first:
                     if x != "epsilon":
+                        if self.__ll1_table[nt, x] != ("error", -1):
+                            print("Conflict at: ", nt, x, "; table already has: ", self.__ll1_table[nt, x])
+                            return
                         self.__ll1_table[nt, x] = (production, index)
 
         return self.__ll1_table
